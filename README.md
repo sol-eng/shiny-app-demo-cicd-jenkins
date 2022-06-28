@@ -9,6 +9,6 @@ Connect, there are three paths you can follow:
  - Programmatic deployment
 
 This repository is an example of the third deployment path using Jenkins as
-a CI/CD pipeline to test and deploy a Shiny application hosted on Azure Repos to RStudio Connect. 
+a CI/CD pipeline to test and deploy a Shiny application hosted on GitHub to RStudio Connect. 
 
 If you want to learn more about it you can read: [https://solutions.rstudio.com/data-science-admin/deploy/jenkins/](https://solutions.rstudio.com/data-science-admin/deploy/jenkins/)
