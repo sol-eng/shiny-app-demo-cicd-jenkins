@@ -1,12 +1,16 @@
 // Jenkins pipeline: test + deploy this Shiny app to Posit Connect.
 //
-// Follows the original repo pattern (posit-dev/connect#26353 CI/CD how-to):
-//   - Package dependencies are restored with renv from the pinned renv.lock. renv auto-activates
-//     via .Rprofile and installs into the project-local renv/library, so the job needs no root.
-//   - deploy-to-connect.sh bundles content-dir (including its committed manifest.json) and deploys
-//     to Connect via the Connect Server API with an API key. It uses only curl and jq.
+// posit-dev/connect#26353 CI/CD how-to. Package management is renv, and the manifest Connect
+// deploys from is regenerated from that same environment so the two can never drift:
+//   - renv::restore() installs the exact versions pinned in renv.lock (including rsconnect, the
+//     deploy tool) into the project-local renv/library, so the job needs no root.
+//   - rsconnect::writeManifest() rewrites content-dir/manifest.json from the restored library.
+//     Connect reads manifest.json (not renv.lock) to rebuild the server-side environment, so
+//     regenerating it keeps the deployed packages in step with the lockfile.
+//   - deploy-to-connect.sh bundles content-dir (with the fresh manifest.json) and deploys to
+//     Connect via the Connect Server API with an API key. It uses only curl and jq.
 //
-// Agent prerequisites: R on PATH, plus curl and jq.
+// Agent prerequisites: R on PATH (renv restores everything else), plus curl and jq.
 // Configure in Jenkins before the first run:
 //   - an environment variable CONNECT_SERVER = your Connect base URL *with a trailing slash*
 //     (e.g. https://connect.example.com/). Set it globally (Manage Jenkins > System) or on the job.
@@ -26,7 +30,12 @@ pipeline {
   stages {
     stage('Restore R packages (renv)') {
       steps {
-        sh 'R -e "renv::restore()"'
+        sh 'R -e "renv::restore(prompt = FALSE)"'
+      }
+    }
+    stage('Write Connect manifest') {
+      steps {
+        sh 'R -e "rsconnect::writeManifest(Sys.getenv(\'CONTENT_DIRECTORY\'))"'
       }
     }
     stage('Deploy to Connect') {

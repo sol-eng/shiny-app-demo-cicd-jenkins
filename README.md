@@ -13,10 +13,15 @@ deploy a Shiny application to Posit Connect.
 ## How it works
 
 Package dependencies are managed with [`renv`](https://rstudio.github.io/renv/). The pinned
-`renv.lock` is restored with `renv::restore()` — renv auto-activates from `.Rprofile` and installs
-into the project-local `renv/library`, so the job needs no root. The app and its committed
-`content-dir/manifest.json` are then bundled and deployed to Connect by `deploy-to-connect.sh`,
-which calls the Connect Server API with an API key (it uses only `curl` and `jq`, not `rsconnect`).
+`renv.lock` records the app's packages plus `rsconnect` (the deploy tool); `renv::restore()`
+installs them into the project-local `renv/library`, so the job needs no root.
+
+Connect rebuilds the server-side environment from `manifest.json`, **not** from `renv.lock`, so the
+pipeline regenerates `content-dir/manifest.json` from the restored environment with
+`rsconnect::writeManifest()`. That keeps the deployed package set in step with the lockfile instead
+of relying on a hand-committed manifest that can drift. `deploy-to-connect.sh` then bundles
+`content-dir` (including the fresh `manifest.json`) and deploys it to Connect through the Connect
+Server API with an API key (it uses only `curl` and `jq`).
 
 ## Running this in Jenkins
 
