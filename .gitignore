@@ -1,4 +1,7 @@
 .Rproj.user
 .Rhistory
 .RData
-.Ruserdata
+.Ruserdatabundle.tar.gz
+cookie.txt
+.rlib/
+.bin/
