@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
+#
+# Create a bundle, upload that bundle to Posit Connect, deploy that bundle,
+# then wait for deployment to complete.
+#
+# Run this script from the content root directory.
+#
 
 set -e
 
 if [ -z "${CONNECT_SERVER}" ] ; then
     echo "The CONNECT_SERVER environment variable is not defined. It defines"
-    echo "the base URL of your RStudio Connect instance."
+    echo "the base URL of your Posit Connect instance."
     echo 
     echo "    export CONNECT_SERVER='http://connect.company.com/'"
     exit 1
@@ -12,7 +18,7 @@ fi
 
 if [[ "${CONNECT_SERVER}" != */ ]] ; then
     echo "The CONNECT_SERVER environment variable must end in a trailing slash. It"
-    echo "defines the base URL of your RStudio Connect instance."
+    echo "defines the base URL of your Posit Connect instance."
     echo 
     echo "    export CONNECT_SERVER='http://connect.company.com/'"
     exit 1
@@ -20,9 +26,9 @@ fi
 
 if [ -z "${CONNECT_API_KEY}" ] ; then
     echo "The CONNECT_API_KEY environment variable is not defined. It must contain"
-    echo "an API key owned by a 'publisher' account in your RStudio Connect instance."
+    echo "an API key owned by a 'publisher' account in your Posit Connect instance."
     echo
-    echo "    export CONNECT_API_KEY='jIsDWwtuWWsRAwu0XoYpbyok2rlXfRWa'"
+    echo "    export CONNECT_API_KEY='YOUR_CONNECT_API_KEY'"
     exit 1
 fi
 
@@ -66,7 +72,6 @@ else
     echo "Created content: ${CONTENT}"
 fi
 
-echo "##vso[task.setvariable variable=CONTENT]${CONTENT}"
 
 # Upload the bundle
 UPLOAD=$(curl --silent --show-error -L --max-redirs 0 --fail -X POST \

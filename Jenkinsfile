@@ -10,7 +10,10 @@
 //   - deploy-to-connect.sh bundles content-dir (with the fresh manifest.json) and deploys to
 //     Connect via the Connect Server API with an API key. It uses only curl and jq.
 //
-// Agent prerequisites: R on PATH (renv restores everything else), plus curl and jq.
+// Agent prerequisites: an Ubuntu 24.04 (noble) agent with R 4.5.x on PATH, plus curl and jq, and
+// the system libraries the pinned binary packages link against (libcurl, libssl, libxml2, libicu,
+// libpng, libjpeg, libtiff, libcairo, libfontconfig, libfreetype, libuv). renv.lock pins noble
+// binaries, so a non-noble agent would fall back to source compilation (needing a toolchain).
 // Configure in Jenkins before the first run:
 //   - an environment variable CONNECT_SERVER = your Connect base URL *with a trailing slash*
 //     (e.g. https://connect.example.com/). Set it globally (Manage Jenkins > System) or on the job.
@@ -21,10 +24,12 @@ pipeline {
   agent any
 
   environment {
-    CONNECT_SERVER    = "${env.CONNECT_SERVER}"
-    CONNECT_API_KEY   = credentials('connect-api-key')
-    CONTENT_DIRECTORY = 'content-dir'
-    UNIQ_NAME         = 'shiny-app-demo-cicd-jenkins'
+    CONNECT_SERVER          = "${env.CONNECT_SERVER}"
+    CONNECT_API_KEY         = credentials('connect-api-key')
+    CONTENT_DIRECTORY       = 'content-dir'
+    UNIQ_NAME               = 'shiny-app-demo-cicd-jenkins'
+    // Keep the literal __linux__/noble binary URL from renv.lock (don't let renv re-derive it).
+    RENV_CONFIG_PPM_ENABLED = 'FALSE'
   }
 
   stages {
