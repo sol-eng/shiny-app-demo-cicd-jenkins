@@ -1,4 +1,4 @@
-// Jenkins pipeline: test + deploy this Shiny app to Posit Connect.
+// Jenkins pipeline: deploy this Shiny app to Posit Connect.
 //
 // posit-dev/connect#26353 CI/CD how-to. Package management is renv, and the manifest Connect
 // deploys from is regenerated from that same environment so the two can never drift:
