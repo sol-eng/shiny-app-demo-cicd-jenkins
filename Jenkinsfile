@@ -38,6 +38,19 @@ pipeline {
         sh 'R -e "renv::restore(prompt = FALSE)"'
       }
     }
+    // Gate the deploy on fast unit tests of the app's data functions (no browser/network).
+    // testthat is a CI-only tool, installed here rather than pinned in renv.lock so the
+    // deployed manifest stays limited to the app's own runtime dependencies. A test failure
+    // aborts the stage (non-zero exit) and the Write manifest / Deploy stages never run.
+    stage('Test app data functions') {
+      steps {
+        sh '''
+          set -eu
+          R -e "renv::install('testthat', prompt = FALSE)"
+          Rscript run-tests.R
+        '''
+      }
+    }
     stage('Write Connect manifest') {
       steps {
         sh 'R -e "rsconnect::writeManifest(Sys.getenv(\'CONTENT_DIRECTORY\'))"'

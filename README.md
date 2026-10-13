@@ -16,6 +16,11 @@ Package dependencies are managed with [`renv`](https://rstudio.github.io/renv/).
 `renv.lock` records the app's packages plus `rsconnect` (the deploy tool); `renv::restore()`
 installs them into the project-local `renv/library`, so the job needs no root.
 
+The pipeline gates the deploy on tests. A **Test app data functions** stage runs `run-tests.R`, a
+fast `testthat` suite over the app's data functions (no browser, network, or Shiny server), before
+the manifest is written; a failing test aborts the build so nothing is deployed. `testthat` is a
+CI-only tool installed in that stage, so it stays out of the deployed `manifest.json`.
+
 Connect rebuilds the server-side environment from `manifest.json`, **not** from `renv.lock`, so the
 pipeline regenerates `content-dir/manifest.json` from the restored environment with
 `rsconnect::writeManifest()`. That keeps the deployed package set in step with the lockfile instead
